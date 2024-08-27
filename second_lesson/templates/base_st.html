@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}My Site{% endblock %}</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #343a40;
+            color: #f8f9fa;
+        }
+        .table {
+            background-color: #454d55;
+        }
+        .thead-dark th {
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: #3e444a;
+        }
+        .table-hover tbody tr:hover {
+            background-color: #495057;
+        }
+        header {
+            background-color: #6c757d;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .btn-group {
+            margin-right: 10px;
+        }
+        .search-container {
+            position: relative;
+        }
+        .list-group-item-action {
+            cursor: pointer;
+        }
+        .suggestions {
+            position: absolute;
+            width: 100%;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        {% if user.is_authenticated %}
+            <div class="btn-group">
+                <a href="{% url 'myapp:student_list' %}" class="btn btn-primary">Students</a>
+                <a href="{% url 'myapp:teacher_list' %}" class="btn btn-primary">Teachers</a>
+                <a href="{% url 'myapp:class_list'%}" class="btn btn-primary">Class</a>
+                <a href="{% url 'myapp:profile' %}" class="btn btn-secondary">Profile</a>
+            </div>
+        {% else %}
+            <div class="btn-group">
+                <a href="{% url 'myapp:login' %}" class="btn btn-primary">Login</a>
+                <a href="{% url 'myapp:register' %}" class="btn btn-success">Register</a>                
+            </div>
+        {% endif %}
+        <div class="search-container">
+            <input type="text" id="name" class="form-control" placeholder="Search by name" onkeyup="searchName()">
+            <div id="suggestions" class="list-group suggestions"></div>
+        </div>
+    </header>
+
+    <div class="container mt-4">
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer class="mt-4">
+        <div class="container">
+            <p>Author: Your Name</p>
+            <p>Email: your.email@example.com</p>
+        </div>
+    </footer>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        function searchName() {
+            var input = document.getElementById('name').value;
+            if (input.length > 0) {
+                fetch(`/search_name?query=${input}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        var suggestions = document.getElementById('suggestions');
+                        suggestions.innerHTML = '';
+                        data.forEach(name => {
+                            var suggestionItem = document.createElement('a');
+                            suggestionItem.classList.add('list-group-item', 'list-group-item-action');
+                            suggestionItem.innerText = name;
+                            suggestionItem.onclick = () => {
+                                document.getElementById('name').value = name;
+                                suggestions.innerHTML = '';
+                            };
+                            suggestions.appendChild(suggestionItem);
+                        });
+                    });
+            } else {
+                document.getElementById('suggestions').innerHTML = '';
+            }
+        }
+    </script>
+</body>
+</html>

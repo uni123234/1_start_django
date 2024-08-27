@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1 class="container w-75 mb-3">Welcome</h1>
+
+<div class="container">
+    <div class="row row-cols-1 row-cols-md-2">
+        {% for product, details in products.items %}
+        <div class="col">
+            <div class="card container w-75 mb-3 text-white bg-dark border-warning">
+                <h5 class="card-header border-secondary">ID: {{ details.id }}</h5>
+                <div class="card-body">
+                    <h5 class="card-title">{{ product }}</h5>
+                    <p class="card-text">description: {{ details.description }}</p>
+                    <a href="{% url 'blog:product' details.id %}" class="btn btn-primary">Details</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+
+<div class="container">
+    <div class="row row-cols-1 row-cols-md-2">
+        {% for post in posts %}
+        <div class="col">
+            <div class="card container w-75 mb-3 text-white bg-dark border-warning">
+                <h5 class="card-header border-secondary">Category: {% if post.category %}{{ post.category }}{% else %} Without category{% endif %}</h5>
+                <div class="card-body">
+                    <h5 class="card-title">{{ post }}</h5>
+                    <p class="card-text">Content: {{ post.body }}</p>
+                    <a href="{% url 'blog:post_details' post.id %}" class="btn btn-primary">Details</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

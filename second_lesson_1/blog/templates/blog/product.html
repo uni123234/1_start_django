@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="bg-warning container w-75 mb-4" style="height: 30px; border-radius: 10px;">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'blog:home' %}">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ product_name }}</li>
+    </ol>
+</nav>
+<div class="card container w-50">
+    <div class="card-body">
+        <h5 class="card-title">{{ product_name }}</h5>
+        <h6 class="card-subtitle mb-2 text-muted">id: {{ product_desc.id }}</h6>
+        <p class="card-text">{{ product_desc.description }}</p>
+        <a href="#" class="card-link">Card link</a>
+        <a href="#" class="card-link">Another link</a>
+    </div>
+</div>
+
+<div class="card container w-50">
+    <div class="card-body">
+        <h5 class="card-title">{{ post }}</h5>
+        <h6 class="card-subtitle mb-2 text-muted">id: {{ post.id }}</h6>
+        <p class="card-text">{{ post.body }}</p>
+        <a href="#" class="card-link">Card link</a>
+        <a href="#" class="card-link">Another link</a>
+    </div>
+</div>
+{% endblock %}

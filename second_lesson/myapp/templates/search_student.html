@@ -1,0 +1,37 @@
+{% extends "base_st.html" %}
+
+{% block title %}Search Student{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Search Student</h2>
+    <input type="text" id="student_name" class="form-control" oninput="searchStudentName()">
+    <div id="student_suggestions" class="list-group mt-3"></div>
+</div>
+
+<script>
+function searchStudentName() {
+    var input = document.getElementById('student_name').value;
+    if (input.length > 0) {
+        fetch(`/search_student_name?query=${input}`)
+            .then(response => response.json())
+            .then(data => {
+                var suggestions = document.getElementById('student_suggestions');
+                suggestions.innerHTML = '';
+                data.forEach(name => {
+                    var suggestionItem = document.createElement('a');
+                    suggestionItem.classList.add('list-group-item', 'list-group-item-action');
+                    suggestionItem.innerText = name;
+                    suggestionItem.onclick = () => {
+                        document.getElementById('student_name').value = name;
+                        suggestions.innerHTML = '';
+                    };
+                    suggestions.appendChild(suggestionItem);
+                });
+            });
+    } else {
+        document.getElementById('student_suggestions').innerHTML = '';
+    }
+}
+</script>
+{% endblock %}

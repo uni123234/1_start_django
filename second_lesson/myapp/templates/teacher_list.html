@@ -1,0 +1,15 @@
+{% extends "base_st.html" %}
+
+{% block content %}
+  <h2>Teachers</h2>
+  <a href="{% url 'myapp:create_teacher' %}" class="btn btn-success">Add Teacher</a>
+  <a href="{% url 'myapp:search_teacher_name' %}" class="btn btn-info">Search Teacher</a>
+  <ul class="list-group mt-3">
+    {% for teacher in teachers %}
+      <li class="list-group-item">
+        {{ teacher.first_name }} {{ teacher.last_name }} - 
+        <a href="{% url 'myapp:edit_teacher' teacher.id %}">Edit</a>
+      </li>
+    {% endfor %}
+  </ul>
+{% endblock %}

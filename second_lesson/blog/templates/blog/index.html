@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Welcome</h1>
+    {% for i in menu %}
+    <a href="{% url 'blog:about' %}">{{ i }}</a>
+    {% endfor %}
+
+    {% for items,details in items.items %}
+    <p><a href="{% url 'blog:product' details.id %}">{{ product }}</a> | id: {{ details.id }} description: {{ details.description }}</p>
+    {% endfor %}
+{% endblock %}

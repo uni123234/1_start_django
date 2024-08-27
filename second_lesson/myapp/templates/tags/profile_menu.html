@@ -1,0 +1,10 @@
+<div class="card" style="width: 18rem;">
+    <div class="card-header">
+        Menu
+    </div>
+    <ul class="list-group list-group-flush">
+        {% for option, url in menu.items %}
+        <li class="list-group-item"><a href="{{ url }}">{{ option }}</a></li>
+        {% endfor %}
+    </ul>
+</div>

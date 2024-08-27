@@ -1,0 +1,99 @@
+{% extends "base_st.html" %}
+
+{% block title %}
+Student List
+{% endblock %}
+
+{% block content %}
+<h1 class="my-4 text-center">Students</h1>
+<a href="{% url 'myapp:create_students' %}" class="btn btn-success">Add Student</a>
+<a href="{% url 'myapp:search_student_name' %}" class="btn btn-info">Search Student</a>
+<div class="table-responsive mt-3">
+    <table class="table table-bordered table-striped table-hover">
+        <thead class="thead-dark">
+            <tr>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Address</th>
+                <th>School</th>
+                <th>Class</th>
+                <th>Edit</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student in students %}
+            <tr>
+                <td>
+                    <div class="dropdown">
+                        <a class="dropdown-toggle text-dark" href="#" role="button"
+                            id="dropdownMenuLink{{ forloop.counter }}" data-toggle="dropdown" aria-haspopup="true"
+                            aria-expanded="false">
+                            {{ student.first_name }}
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink{{ forloop.counter }}">
+                            <a class="dropdown-item" href="{% url 'myapp:edit_students' student.id %}">{{
+                                student.first_name }}</a>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div class="dropdown">
+                        <a class="dropdown-toggle text-dark" href="#" role="button"
+                            id="dropdownMenuLink{{ forloop.counter }}1" data-toggle="dropdown" aria-haspopup="true"
+                            aria-expanded="false">
+                            {{ student.last_name }}
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink{{ forloop.counter }}1">
+                            <a class="dropdown-item" href="{% url 'myapp:edit_students' student.id %}">{{
+                                student.last_name }}</a>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div class="dropdown">
+                        <a class="dropdown-toggle text-dark" href="#" role="button"
+                            id="dropdownMenuLink{{ forloop.counter }}2" data-toggle="dropdown" aria-haspopup="true"
+                            aria-expanded="false">
+                            {{ student.address }}
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink{{ forloop.counter }}2">
+                            <a class="dropdown-item" href="{% url 'myapp:edit_students' student.id %}">{{
+                                student.address }}</a>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div class="dropdown">
+                        <a class="dropdown-toggle text-dark" href="#" role="button"
+                            id="dropdownMenuLink{{ forloop.counter }}3" data-toggle="dropdown" aria-haspopup="true"
+                            aria-expanded="false">
+                            {{ student.school.name }}
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink{{ forloop.counter }}3">
+                            <a class="dropdown-item" href="{% url 'myapp:edit_students' student.id %}">{{
+                                student.school.name }}</a>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div class="dropdown">
+                        <a class="dropdown-toggle text-dark" href="#" role="button"
+                            id="dropdownMenuLink{{ forloop.counter }}4" data-toggle="dropdown" aria-haspopup="true"
+                            aria-expanded="false">
+                            {{ student.class_number.class_number }}
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink{{ forloop.counter }}4">
+                            <a class="dropdown-item" href="{% url 'myapp:edit_students' student.id %}">{{
+                                student.class_number.class_number }}</a>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <a class="btn btn-primary" href="{% url 'myapp:edit_students' student.id %}">Edit</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
