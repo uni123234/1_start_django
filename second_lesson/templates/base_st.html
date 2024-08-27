@@ -5,43 +5,87 @@
     <title>{% block title %}My Site{% endblock %}</title>
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+
         body {
             background-color: #343a40;
-            color: #f8f9fa;
-        }
-        .table {
-            background-color: #454d55;
-        }
-        .thead-dark th {
-            background-color: #6c757d;
-            border-color: #6c757d;
-        }
-        .table-striped tbody tr:nth-of-type(odd) {
-            background-color: #3e444a;
-        }
-        .table-hover tbody tr:hover {
-            background-color: #495057;
-        }
-        header {
-            background-color: #6c757d;
-            padding: 10px 20px;
+            color: #333;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
+            min-height: 100vh;
         }
-        .btn-group {
-            margin-right: 10px;
+
+        .content-wrapper {
+            flex: 1;
         }
+
+        .card {
+            border-radius: 8px;
+            border: none;
+            background-color: #ffffff;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        .card-body p {
+            margin: 0;
+        }
+
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
         .search-container {
+            margin-top: 20px;
             position: relative;
         }
-        .list-group-item-action {
-            cursor: pointer;
-        }
+
         .suggestions {
             position: absolute;
             width: 100%;
             z-index: 1000;
+        }
+
+        @media (max-width: 767px) {
+            .card {
+                margin-bottom: 20px;
+            }
+
+            .btn {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+        }
+
+        footer {
+            background-color: #212529;
+            color: #f8f9fa;
+            padding: 20px 0;
+            text-align: center;
+        }
+
+
+        h1, h2, h3, h4, h5, h6 {
+            color: #ffffff;
+        }
+        h1.h4.mb-4 {
+            color: black;
+        }
+        h2.h4.mb-4 {
+            color: black;
         }
     </style>
 </head>
@@ -51,8 +95,10 @@
             <div class="btn-group">
                 <a href="{% url 'myapp:student_list' %}" class="btn btn-primary">Students</a>
                 <a href="{% url 'myapp:teacher_list' %}" class="btn btn-primary">Teachers</a>
-                <a href="{% url 'myapp:class_list'%}" class="btn btn-primary">Class</a>
+                <a href="{% url 'myapp:class_list' %}" class="btn btn-primary">Class</a>
+                <a href="{% url 'myapp:school_list' %}" class="btn btn-primary">School</a>
                 <a href="{% url 'myapp:profile' %}" class="btn btn-secondary">Profile</a>
+                <a href="{% url 'myapp:logout' %}" class="btn btn-danger">Logout</a> <!-- Посилання на вихід -->
             </div>
         {% else %}
             <div class="btn-group">
@@ -66,16 +112,19 @@
         </div>
     </header>
 
-    <div class="container mt-4">
-        {% block content %}{% endblock %}
+    <div class="content-wrapper">
+        <div class="container mt-4">
+            {% block content %}{% endblock %}
+        </div>
     </div>
 
-    <footer class="mt-4">
+    <footer>
         <div class="container">
             <p>Author: Your Name</p>
             <p>Email: your.email@example.com</p>
         </div>
     </footer>
+
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>

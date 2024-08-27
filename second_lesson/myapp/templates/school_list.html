@@ -1,0 +1,12 @@
+{% extends "base_st.html" %}
+{% block content %}
+  <h2>School List</h2>
+  <ul>
+    {% for school in schools %}
+      <li>
+        {{ school.name }} - {{ school.address }} - {{ school.school_number }}
+        <a href="{% url 'myapp:edit_school' school.id %}">Edit</a>
+      </li>
+    {% endfor %}
+  </ul>
+{% endblock %}

@@ -1,16 +1,19 @@
-from django import forms
+from django.shortcuts import redirect, render
+from django.views.generic import View, ListView, CreateView, UpdateView, TemplateView
 from django.contrib.auth import login, authenticate
-from django.http import JsonResponse
-from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.core.paginator import Paginator
+from django.http import JsonResponse
+from django.urls import reverse, reverse_lazy
 from django.core.exceptions import PermissionDenied
-from django.urls import reverse_lazy
-from .models import Class, Student, Teacher
+from django.db.models import Q
+from django.db import transaction
+from django.core.exceptions import ObjectDoesNotExist
+from .models import Class, CustomUser, School, Student, Teacher
 from .forms import (
+    ClassForm,
     CustomUserChangeForm,
     ProfileForm,
+    SchoolForm,
     StudentForm,
     UserLoginForm,
     CustomUserCreationForm,
@@ -18,37 +21,59 @@ from .forms import (
 )
 
 
-def register(request):
-    if request.method == "POST":
-        form = CustomUserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            is_teacher = "is_teacher" in request.POST
-            is_student = "is_student" in request.POST
-
-            if not is_teacher and not is_student:
-                messages.error(
-                    request, "You must select at least one role (teacher or student)."
+def handle_user_roles(user, request):
+    """
+    Set user roles and handle additional setup based on user type.
+    """
+    with transaction.atomic():
+        if user.is_teacher:
+            try:
+                default_class = Class.objects.get(name="Default Teacher Class")
+            except ObjectDoesNotExist:
+                default_class = Class.objects.create(
+                    name="Default Teacher Class",
+                    location="Default Location",
+                    school=user.school,
                 )
-                return render(request, "register.html", {"form": form})
-
-            user.is_teacher = is_teacher
-            user.is_student = is_student
+            user.default_class = default_class
             user.save()
 
-            messages.success(request, f"Account created for {user.email}!")
-            login(request, user)
-            if user.is_teacher:
-                return redirect("myapp:teacher_list")
-            else:
-                return redirect("myapp:student_list")
-    else:
-        form = CustomUserCreationForm()
-    return render(request, "register.html", {"form": form})
+        if user.is_student:
+            try:
+                default_class = Class.objects.get(name="Default Student Class")
+            except ObjectDoesNotExist:
+                default_class = Class.objects.create(
+                    name="Default Student Class",
+                    location="Default Location",
+                    school=user.school,
+                )
+            user.classes.add(default_class)
+            user.save()
 
 
-def user_login(request):
-    if request.method == "POST":
+class RegisterView(CreateView):
+    form_class = CustomUserCreationForm
+    template_name = "register.html"
+
+    def form_valid(self, form):
+        user = form.save()
+        handle_user_roles(user, self.request)
+        login(self.request, user)
+        messages.success(self.request, f"Welcome, {user.email}!")
+        if user.is_teacher:
+            return redirect("myapp:teacher_list")
+        return redirect("myapp:student_list")
+
+    def form_invalid(self, form):
+        return self.render_to_response(self.get_context_data(form=form))
+
+
+class LoginView(View):
+    def get(self, request):
+        form = UserLoginForm()
+        return render(request, "login.html", {"form": form})
+
+    def post(self, request):
         form = UserLoginForm(data=request.POST)
         if form.is_valid():
             email = form.cleaned_data.get("username")
@@ -56,154 +81,192 @@ def user_login(request):
             user = authenticate(request, email=email, password=password)
             if user is not None:
                 login(request, user)
-                messages.success(request, f"Welcome, {email}!")
+                messages.success(request, f"Welcome, {user.email}!")
                 if user.is_teacher:
                     return redirect("myapp:teacher_list")
-                else:
-                    return redirect("myapp:student_list")
+                return redirect("myapp:student_list")
             else:
                 messages.error(request, "Invalid email or password.")
-    else:
-        form = UserLoginForm()
-    return render(request, "login.html", {"form": form})
+        return render(request, "login.html", {"form": form})
 
 
-@login_required
-def student_list(request):
-    if not request.user.is_teacher:
-        raise PermissionDenied("You do not have permission to view this page.")
-    students = Student.objects.all()
-    paginator = Paginator(students, 10)
-    page_num = request.GET.get("page", 1)
-    page_obj = paginator.get_page(page_num)
-    return render(request, "index.html", {"page_obj": page_obj})
+class StudentListView(ListView):
+    model = Student
+    template_name = "index.html"
+    context_object_name = "students"
+    paginate_by = 10
+
+    def get_queryset(self):
+        if not self.request.user.is_teacher:
+            raise PermissionDenied("You do not have permission to view this page.")
+        return Student.objects.all()
 
 
-@login_required
-def teacher_list(request):
-    teachers = Teacher.objects.all()
-    paginator = Paginator(teachers, 10)
-    page_num = request.GET.get("page", 1)
-    page_obj = paginator.get_page(page_num)
-    return render(request, "teacher_list.html", {"page_obj": page_obj})
+class TeacherListView(ListView):
+    model = Teacher
+    template_name = "teacher_list.html"
+    context_object_name = "teachers"
+    paginate_by = 10
 
 
-@login_required
-def create_students(request):
-    if request.method == "POST":
-        form = StudentForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect("myapp:student_list")
-    else:
-        form = StudentForm()
-    return render(request, "create_students.html", {"form": form})
+class CreateStudentView(CreateView):
+    form_class = StudentForm
+    template_name = "create_students.html"
+    success_url = reverse_lazy("myapp:student_list")
 
 
-@login_required
-def edit_students(request, student_id):
-    student = get_object_or_404(Student, pk=student_id)
-    if request.method == "POST":
-        form = StudentForm(request.POST, instance=student)
-        if form.is_valid():
-            form.save()
-            return redirect("myapp:student_list")
-    else:
-        form = StudentForm(instance=student)
-    return render(request, "edit_students.html", {"form": form})
+class UpdateStudentView(UpdateView):
+    model = Student
+    form_class = StudentForm
+    template_name = "edit_students.html"
+    success_url = reverse_lazy("myapp:student_list")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['edit_url'] = reverse('myapp:edit_student', kwargs={'pk': self.object.pk})
+        return context
 
 
-def class_list(request):
-    classes = Class.objects.all()
-    return render(request, "class_list.html", {"classes": classes})
+
+class CreateClassView(CreateView):
+    form_class = ClassForm
+    template_name = "create_class.html"
+    success_url = reverse_lazy("myapp:class_list")
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, "Class has been created successfully!")
+        return response
 
 
-@login_required
-def create_teacher(request):
-    if request.method == "POST":
-        form = TeacherForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect("myapp:teacher_list")
-    else:
-        form = TeacherForm()
-    return render(request, "create_teacher.html", {"form": form})
+class UpdateClassView(UpdateView):
+    model = Class
+    form_class = ClassForm
+    template_name = "edit_class.html"
+    success_url = reverse_lazy("myapp:class_list")
 
 
-@login_required
-def edit_teacher(request, teacher_id):
-    teacher = get_object_or_404(Teacher, pk=teacher_id)
-    if request.method == "POST":
-        form = TeacherForm(request.POST, instance=teacher)
-        if form.is_valid():
-            form.save()
-            return redirect("myapp:teacher_list")
-    else:
-        form = TeacherForm(instance=teacher)
-    return render(request, "edit_teacher.html", {"form": form})
+class CreateSchoolView(CreateView):
+    form_class = SchoolForm
+    template_name = "create_school.html"
+    success_url = reverse_lazy("myapp:school_list")
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, "School has been created successfully!")
+        return response
 
 
-def search_name(request):
-    query = request.GET.get("query", "")
-    if query:
-        students = Student.objects.filter(
-            first_name__icontains=query
-        ) | Student.objects.filter(last_name__icontains=query)
-        teachers = Teacher.objects.filter(
-            first_name__icontains=query
-        ) | Teacher.objects.filter(last_name__icontains=query)
-        results = list(students.values_list("first_name", "last_name")) + list(
-            teachers.values_list("first_name", "last_name")
-        )
+class UpdateSchoolView(UpdateView):
+    model = School
+    form_class = SchoolForm
+    template_name = "edit_school.html"
+    success_url = reverse_lazy("myapp:school_list")
+
+
+class CreateTeacherView(CreateView):
+    form_class = TeacherForm
+    template_name = "create_teacher.html"
+    success_url = reverse_lazy("myapp:teacher_list")
+
+
+class UpdateTeacherView(UpdateView):
+    model = Teacher
+    form_class = TeacherForm
+    template_name = "edit_teacher.html"
+    success_url = reverse_lazy("myapp:teacher_list")
+
+
+class ClassListView(ListView):
+    model = Class
+    template_name = "class_list.html"
+    context_object_name = "classes"
+
+
+class SchoolListView(ListView):
+    model = School
+    template_name = "school_list.html"
+    context_object_name = "schools"
+
+
+class SearchNameView(View):
+    def get(self, request):
+        query = request.GET.get("query", "")
+        results = []
+        if query:
+            students = Student.objects.filter(
+                Q(first_name__icontains=query) | Q(last_name__icontains=query)
+            )
+            teachers = Teacher.objects.filter(
+                Q(first_name__icontains=query) | Q(last_name__icontains=query)
+            )
+            results = list(students.values_list("first_name", "last_name")) + list(
+                teachers.values_list("first_name", "last_name")
+            )
         return JsonResponse(results, safe=False)
-    return JsonResponse([], safe=False)
 
 
-def search_teacher_name(request):
-    query = request.GET.get("query", "")
-    if query:
-        teachers = Teacher.objects.search_by_name(query)
-        names = [f"{teacher.first_name} {teacher.last_name}" for teacher in teachers]
-    else:
-        names = []
-
-    return JsonResponse(names, safe=False)
-
-
-@login_required
-def profile_view(request):
-    user = request.user
-    menu = {
-        "Profile": reverse_lazy("myapp:profile"),
-        "Edit Profile": reverse_lazy("myapp:edit_profile"),
-        "Logout": reverse_lazy("myapp:logout"),
-    }
-    return render(request, "profile.html", {"user": user, "menu": menu})
+class SearchTeacherNameView(View):
+    def get(self, request):
+        query = request.GET.get("query", "")
+        if query:
+            teachers = Teacher.objects.filter(
+                Q(first_name__icontains=query) | Q(last_name__icontains=query)
+            )
+            names = [
+                f"{teacher.first_name} {teacher.last_name}" for teacher in teachers
+            ]
+        else:
+            names = []
+        return JsonResponse(names, safe=False)
 
 
-@login_required
-def edit_user(request):
-    user = request.user
-    if request.method == "POST":
-        form = CustomUserChangeForm(request.POST, instance=user)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Your account has been updated!")
-            return redirect("myapp:profile")
-    else:
-        form = CustomUserChangeForm(instance=user)
-    return render(request, "edit_user.html", {"user_form": form})
+class ProfileView(TemplateView):
+    template_name = "profile.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["user"] = self.request.user
+        context["menu"] = {
+            "Profile": reverse_lazy("myapp:profile"),
+            "Edit Profile": reverse_lazy("myapp:edit_profile"),
+            "Logout": reverse_lazy("myapp:logout"),
+            "Edit Students": reverse_lazy('myapp:edit_student', kwargs={'pk': self.request.user.pk}),
+        }
+        return context
 
 
-@login_required
-def edit_profile(request):
-    user = request.user
-    if request.method == "POST":
-        form = ProfileForm(request.POST, instance=user)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Your profile has been updated!")
-            return redirect("myapp:profile")
-    else:
-        form = ProfileForm(instance=user)
-    return render(request, "edit_profile.html", {"profile_form": form})
+
+class EditUserView(UpdateView):
+    model = CustomUser
+    form_class = CustomUserChangeForm
+    template_name = "edit_user.html"
+    success_url = reverse_lazy("myapp:profile")
+
+    def get_object(self):
+        return self.request.user
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["user_form"] = self.get_form()
+        return context
+
+
+class EditProfileView(UpdateView):
+    model = CustomUser
+    form_class = ProfileForm
+    template_name = "edit_profile.html"
+    success_url = reverse_lazy("myapp:profile")
+
+    def get_object(self):
+        return self.request.user
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["profile_form"] = self.get_form()
+        context["menu"] = {
+            "Profile": reverse_lazy("myapp:profile"),
+            "Edit Profile": reverse_lazy("myapp:edit_profile"),
+            "Logout": reverse_lazy("myapp:logout"),
+        }
+        return context

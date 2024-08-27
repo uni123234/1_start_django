@@ -1,0 +1,29 @@
+{% extends 'base_st.html' %}
+{% load custom_tags %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-3 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body p-3">
+                    {% profile_menu request.user %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-9 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h1 class="h4 mb-3 text-dark">Welcome, {{ request.user.first_name }}!</h1>
+                    <p class="text-dark"><strong>Email:</strong> {{ request.user.email }}</p>
+                    <p class="text-dark"><strong>First Name:</strong> {{ request.user.first_name }}</p>
+                    <p class="text-dark"><strong>Last Name:</strong> {{ request.user.last_name }}</p>
+                    <div class="mt-4">
+                        <a href="{% url 'myapp:edit_user' %}" class="btn btn-primary me-2">Edit User</a>
+                        <a href="{% url 'myapp:edit_profile' %}" class="btn btn-secondary">Edit Profile</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
