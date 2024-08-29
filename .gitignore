@@ -42,3 +42,4 @@ venv/
 ENV/
 venv.bak/
 *.venv
+second_lesson/db.sqlite3

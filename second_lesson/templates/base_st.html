@@ -77,7 +77,6 @@
             text-align: center;
         }
 
-
         h1, h2, h3, h4, h5, h6 {
             color: #ffffff;
         }
@@ -98,7 +97,10 @@
                 <a href="{% url 'myapp:class_list' %}" class="btn btn-primary">Class</a>
                 <a href="{% url 'myapp:school_list' %}" class="btn btn-primary">School</a>
                 <a href="{% url 'myapp:profile' %}" class="btn btn-secondary">Profile</a>
-                <a href="{% url 'myapp:logout' %}" class="btn btn-danger">Logout</a> <!-- Посилання на вихід -->
+                <a href="#" class="btn btn-danger" onclick="document.getElementById('logout-form').submit();">Logout</a>
+                <form id="logout-form" action="{% url 'myapp:logout' %}" method="post" style="display:none;">
+                    {% csrf_token %}
+                </form>
             </div>
         {% else %}
             <div class="btn-group">

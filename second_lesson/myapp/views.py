@@ -8,6 +8,8 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
+from django.contrib.auth.views import LogoutView
+from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Class, CustomUser, School, Student, Teacher
 from .forms import (
     ClassForm,
@@ -19,7 +21,6 @@ from .forms import (
     CustomUserCreationForm,
     TeacherForm,
 )
-
 
 def handle_user_roles(user, request):
     """
@@ -90,7 +91,7 @@ class LoginView(View):
         return render(request, "login.html", {"form": form})
 
 
-class StudentListView(ListView):
+class StudentListView(LoginRequiredMixin, ListView):
     model = Student
     template_name = "index.html"
     context_object_name = "students"
@@ -102,20 +103,20 @@ class StudentListView(ListView):
         return Student.objects.all()
 
 
-class TeacherListView(ListView):
+class TeacherListView(LoginRequiredMixin, ListView):
     model = Teacher
     template_name = "teacher_list.html"
     context_object_name = "teachers"
     paginate_by = 10
 
 
-class CreateStudentView(CreateView):
+class CreateStudentView(LoginRequiredMixin, CreateView):
     form_class = StudentForm
     template_name = "create_students.html"
     success_url = reverse_lazy("myapp:student_list")
 
 
-class UpdateStudentView(UpdateView):
+class UpdateStudentView(LoginRequiredMixin, UpdateView):
     model = Student
     form_class = StudentForm
     template_name = "edit_students.html"
@@ -123,12 +124,13 @@ class UpdateStudentView(UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['edit_url'] = reverse('myapp:edit_student', kwargs={'pk': self.object.pk})
+        context["edit_url"] = reverse(
+            "myapp:edit_student", kwargs={"pk": self.object.pk}
+        )
         return context
 
 
-
-class CreateClassView(CreateView):
+class CreateClassView(LoginRequiredMixin, CreateView):
     form_class = ClassForm
     template_name = "create_class.html"
     success_url = reverse_lazy("myapp:class_list")
@@ -139,14 +141,14 @@ class CreateClassView(CreateView):
         return response
 
 
-class UpdateClassView(UpdateView):
+class UpdateClassView(LoginRequiredMixin, UpdateView):
     model = Class
     form_class = ClassForm
     template_name = "edit_class.html"
     success_url = reverse_lazy("myapp:class_list")
 
 
-class CreateSchoolView(CreateView):
+class CreateSchoolView(LoginRequiredMixin, CreateView):
     form_class = SchoolForm
     template_name = "create_school.html"
     success_url = reverse_lazy("myapp:school_list")
@@ -157,33 +159,33 @@ class CreateSchoolView(CreateView):
         return response
 
 
-class UpdateSchoolView(UpdateView):
+class UpdateSchoolView(LoginRequiredMixin, UpdateView):
     model = School
     form_class = SchoolForm
     template_name = "edit_school.html"
     success_url = reverse_lazy("myapp:school_list")
 
 
-class CreateTeacherView(CreateView):
+class CreateTeacherView(LoginRequiredMixin, CreateView):
     form_class = TeacherForm
     template_name = "create_teacher.html"
     success_url = reverse_lazy("myapp:teacher_list")
 
 
-class UpdateTeacherView(UpdateView):
+class UpdateTeacherView(LoginRequiredMixin, UpdateView):
     model = Teacher
     form_class = TeacherForm
     template_name = "edit_teacher.html"
     success_url = reverse_lazy("myapp:teacher_list")
 
 
-class ClassListView(ListView):
+class ClassListView(LoginRequiredMixin, ListView):
     model = Class
     template_name = "class_list.html"
     context_object_name = "classes"
 
 
-class SchoolListView(ListView):
+class SchoolListView(LoginRequiredMixin, ListView):
     model = School
     template_name = "school_list.html"
     context_object_name = "schools"
@@ -221,7 +223,7 @@ class SearchTeacherNameView(View):
         return JsonResponse(names, safe=False)
 
 
-class ProfileView(TemplateView):
+class ProfileView(LoginRequiredMixin, TemplateView):
     template_name = "profile.html"
 
     def get_context_data(self, **kwargs):
@@ -231,13 +233,14 @@ class ProfileView(TemplateView):
             "Profile": reverse_lazy("myapp:profile"),
             "Edit Profile": reverse_lazy("myapp:edit_profile"),
             "Logout": reverse_lazy("myapp:logout"),
-            "Edit Students": reverse_lazy('myapp:edit_student', kwargs={'pk': self.request.user.pk}),
+            "Edit Students": reverse_lazy(
+                "myapp:edit_student", kwargs={"pk": self.request.user.pk}
+            ),
         }
         return context
 
 
-
-class EditUserView(UpdateView):
+class EditUserView(LoginRequiredMixin, UpdateView):
     model = CustomUser
     form_class = CustomUserChangeForm
     template_name = "edit_user.html"
@@ -252,7 +255,7 @@ class EditUserView(UpdateView):
         return context
 
 
-class EditProfileView(UpdateView):
+class EditProfileView(LoginRequiredMixin, UpdateView):
     model = CustomUser
     form_class = ProfileForm
     template_name = "edit_profile.html"
@@ -270,3 +273,7 @@ class EditProfileView(UpdateView):
             "Logout": reverse_lazy("myapp:logout"),
         }
         return context
+
+
+class CustomLogoutView(LogoutView):
+    http_method_names = ["get", "post"]

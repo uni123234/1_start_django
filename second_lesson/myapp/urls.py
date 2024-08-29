@@ -2,6 +2,7 @@ from django.urls import path
 from django.contrib.auth.views import LogoutView
 from django.contrib.auth import views as auth_views
 from .views import (
+    CustomLogoutView,
     RegisterView,
     LoginView,
     SchoolListView,
@@ -42,7 +43,7 @@ urlpatterns = [
     ),
     path("search/", SearchNameView.as_view(), name="search_name"),
     path("class_list/", ClassListView.as_view(), name="class_list"),
-    path("logout/", LogoutView.as_view(), name="logout"),
+    path("logout/", CustomLogoutView.as_view(), name="logout"),
     path("create_class/", CreateClassView.as_view(), name="create_class"),
     path("edit_class/<int:pk>/", UpdateClassView.as_view(), name="edit_class"),
     path("school/", SchoolListView.as_view(), name="school_list"),
