@@ -22,6 +22,7 @@ from .forms import (
     TeacherForm,
 )
 
+
 def handle_user_roles(user, request):
     """
     Set user roles and handle additional setup based on user type.
@@ -277,3 +278,9 @@ class EditProfileView(LoginRequiredMixin, UpdateView):
 
 class CustomLogoutView(LogoutView):
     http_method_names = ["get", "post"]
+
+    def get_next_page(self):
+        next_page = super().get_next_page()
+        if next_page is None:
+            next_page = reverse("myapp:login")
+        return next_page
