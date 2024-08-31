@@ -99,7 +99,9 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     is_student = models.BooleanField(default=False)
 
     objects = CustomUserManager()
-    teacher = models.OneToOneField(Teacher, on_delete=models.CASCADE, null=True, blank=True)
+    teacher = models.OneToOneField(
+        Teacher, on_delete=models.CASCADE, null=True, blank=True
+    )
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["first_name", "last_name"]
