@@ -1,5 +1,5 @@
 from django.shortcuts import redirect, render
-from django.views.generic import View, ListView, CreateView, UpdateView, TemplateView
+from django.views.generic import View, ListView, CreateView, UpdateView
 from django.contrib.auth import login, authenticate
 from django.contrib import messages
 from django.http import JsonResponse
@@ -67,6 +67,10 @@ class RegisterView(CreateView):
         return redirect("myapp:student_list")
 
     def form_invalid(self, form):
+        messages.error(
+            self.request,
+            "There was an error with your registration. Please check the form and try again.",
+        )
         return self.render_to_response(self.get_context_data(form=form))
 
 
@@ -89,6 +93,10 @@ class LoginView(View):
                 return redirect("myapp:student_list")
             else:
                 messages.error(request, "Invalid email or password.")
+        else:
+            messages.error(
+                request, "There was an error with the form. Please check the inputs."
+            )
         return render(request, "login.html", {"form": form})
 
 
@@ -100,6 +108,9 @@ class StudentListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         if not self.request.user.is_teacher:
+            messages.error(
+                self.request, "You do not have permission to view this page."
+            )
             raise PermissionDenied("You do not have permission to view this page.")
         return Student.objects.all()
 
@@ -116,12 +127,38 @@ class CreateStudentView(LoginRequiredMixin, CreateView):
     template_name = "create_students.html"
     success_url = reverse_lazy("myapp:student_list")
 
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, "Student has been created successfully!")
+        return response
+
+    def form_invalid(self, form):
+        messages.error(
+            self.request, "There was an error with the form. Please check the inputs."
+        )
+        return self.render_to_response(self.get_context_data(form=form))
+
 
 class UpdateStudentView(LoginRequiredMixin, UpdateView):
     model = Student
     form_class = StudentForm
     template_name = "edit_students.html"
     success_url = reverse_lazy("myapp:student_list")
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, "Student has been updated successfully!")
+        return response
+
+    def form_invalid(self, form):
+        messages.error(
+            self.request,
+            "There was an error updating the student. Please check the form and try again.",
+        )
+        return self.render_to_response(self.get_context_data(form=form))
+
+    def get_object(self, queryset=None):
+        return Student.objects.get(pk=self.kwargs["pk"])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -141,12 +178,33 @@ class CreateClassView(LoginRequiredMixin, CreateView):
         messages.success(self.request, "Class has been created successfully!")
         return response
 
+    def form_invalid(self, form):
+        messages.error(
+            self.request, "There was an error with the form. Please check the inputs."
+        )
+        return self.render_to_response(self.get_context_data(form=form))
+
 
 class UpdateClassView(LoginRequiredMixin, UpdateView):
     model = Class
     form_class = ClassForm
     template_name = "edit_class.html"
     success_url = reverse_lazy("myapp:class_list")
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, "Class has been updated successfully!")
+        return response
+
+    def form_invalid(self, form):
+        messages.error(
+            self.request,
+            "There was an error updating the class. Please check the form and try again.",
+        )
+        return self.render_to_response(self.get_context_data(form=form))
+
+    def get_object(self, queryset=None):
+        return Class.objects.get(pk=self.kwargs["pk"])
 
 
 class CreateSchoolView(LoginRequiredMixin, CreateView):
@@ -159,6 +217,12 @@ class CreateSchoolView(LoginRequiredMixin, CreateView):
         messages.success(self.request, "School has been created successfully!")
         return response
 
+    def form_invalid(self, form):
+        messages.error(
+            self.request, "There was an error with the form. Please check the inputs."
+        )
+        return self.render_to_response(self.get_context_data(form=form))
+
 
 class UpdateSchoolView(LoginRequiredMixin, UpdateView):
     model = School
@@ -166,11 +230,37 @@ class UpdateSchoolView(LoginRequiredMixin, UpdateView):
     template_name = "edit_school.html"
     success_url = reverse_lazy("myapp:school_list")
 
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, "School has been updated successfully!")
+        return response
+
+    def form_invalid(self, form):
+        messages.error(
+            self.request,
+            "There was an error updating the school. Please check the form and try again.",
+        )
+        return self.render_to_response(self.get_context_data(form=form))
+
+    def get_object(self, queryset=None):
+        return School.objects.get(pk=self.kwargs["pk"])
+
 
 class CreateTeacherView(LoginRequiredMixin, CreateView):
     form_class = TeacherForm
     template_name = "create_teacher.html"
     success_url = reverse_lazy("myapp:teacher_list")
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, "Teacher has been created successfully!")
+        return response
+
+    def form_invalid(self, form):
+        messages.error(
+            self.request, "There was an error with the form. Please check the inputs."
+        )
+        return self.render_to_response(self.get_context_data(form=form))
 
 
 class UpdateTeacherView(LoginRequiredMixin, UpdateView):
@@ -178,6 +268,21 @@ class UpdateTeacherView(LoginRequiredMixin, UpdateView):
     form_class = TeacherForm
     template_name = "edit_teacher.html"
     success_url = reverse_lazy("myapp:teacher_list")
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, "Teacher has been updated successfully!")
+        return response
+
+    def form_invalid(self, form):
+        messages.error(
+            self.request,
+            "There was an error updating the teacher. Please check the form and try again.",
+        )
+        return self.render_to_response(self.get_context_data(form=form))
+
+    def get_object(self, queryset=None):
+        return Teacher.objects.get(pk=self.kwargs["pk"])
 
 
 class ClassListView(LoginRequiredMixin, ListView):
@@ -197,48 +302,8 @@ class SearchNameView(View):
         query = request.GET.get("query", "")
         results = []
         if query:
-            students = Student.objects.filter(
-                Q(first_name__icontains=query) | Q(last_name__icontains=query)
-            )
-            teachers = Teacher.objects.filter(
-                Q(first_name__icontains=query) | Q(last_name__icontains=query)
-            )
-            results = list(students.values_list("first_name", "last_name")) + list(
-                teachers.values_list("first_name", "last_name")
-            )
-        return JsonResponse(results, safe=False)
-
-
-class SearchTeacherNameView(View):
-    def get(self, request):
-        query = request.GET.get("query", "")
-        if query:
-            teachers = Teacher.objects.filter(
-                Q(first_name__icontains=query) | Q(last_name__icontains=query)
-            )
-            names = [
-                f"{teacher.first_name} {teacher.last_name}" for teacher in teachers
-            ]
-        else:
-            names = []
-        return JsonResponse(names, safe=False)
-
-
-class ProfileView(LoginRequiredMixin, TemplateView):
-    template_name = "profile.html"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["user"] = self.request.user
-        context["menu"] = {
-            "Profile": reverse_lazy("myapp:profile"),
-            "Edit Profile": reverse_lazy("myapp:edit_profile"),
-            "Logout": reverse_lazy("myapp:logout"),
-            "Edit Students": reverse_lazy(
-                "myapp:edit_student", kwargs={"pk": self.request.user.pk}
-            ),
-        }
-        return context
+            results = Student.objects.filter(Q(name__icontains=query)).values("name")
+        return JsonResponse(list(results), safe=False)
 
 
 class EditUserView(LoginRequiredMixin, UpdateView):
@@ -247,7 +312,19 @@ class EditUserView(LoginRequiredMixin, UpdateView):
     template_name = "edit_user.html"
     success_url = reverse_lazy("myapp:profile")
 
-    def get_object(self):
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, "User profile has been updated successfully!")
+        return response
+
+    def form_invalid(self, form):
+        messages.error(
+            self.request,
+            "There was an error updating the profile. Please check the form and try again.",
+        )
+        return self.render_to_response(self.get_context_data(form=form))
+
+    def get_object(self, queryset=None):
         return self.request.user
 
     def get_context_data(self, **kwargs):
@@ -262,7 +339,19 @@ class EditProfileView(LoginRequiredMixin, UpdateView):
     template_name = "edit_profile.html"
     success_url = reverse_lazy("myapp:profile")
 
-    def get_object(self):
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, "Profile has been updated successfully!")
+        return response
+
+    def form_invalid(self, form):
+        messages.error(
+            self.request,
+            "There was an error updating the profile. Please check the form and try again.",
+        )
+        return self.render_to_response(self.get_context_data(form=form))
+
+    def get_object(self, queryset=None):
         return self.request.user
 
     def get_context_data(self, **kwargs):
@@ -276,9 +365,5 @@ class EditProfileView(LoginRequiredMixin, UpdateView):
         return context
 
 
-class CustomLogoutView(LogoutView):
-    http_method_names = ["get", "post"]
-    next_page = None
-
-    def get_redirect_url(self):
-        return self.next_page or reverse("myapp:login")
+class LogoutUserView(LogoutView):
+    next_page = reverse_lazy("myapp:login")

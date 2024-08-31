@@ -1,7 +1,7 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from .views import (
-    CustomLogoutView,
+    LogoutUserView,
     RegisterView,
     LoginView,
     SchoolListView,
@@ -17,8 +17,6 @@ from .views import (
     UpdateTeacherView,
     ClassListView,
     SearchNameView,
-    SearchTeacherNameView,
-    ProfileView,
     EditUserView,
     EditProfileView,
 )
@@ -34,20 +32,16 @@ urlpatterns = [
     path("edit_student/<int:pk>/", UpdateStudentView.as_view(), name="edit_student"),
     path("create_teacher/", CreateTeacherView.as_view(), name="create_teacher"),
     path("edit_teacher/<int:pk>/", UpdateTeacherView.as_view(), name="edit_teacher"),
-    path("profile/", ProfileView.as_view(), name="profile"),
-    path("edit_user/", EditUserView.as_view(), name="edit_user"),
-    path("edit_profile/", EditProfileView.as_view(), name="edit_profile"),
-    path(
-        "search_teacher/", SearchTeacherNameView.as_view(), name="search_teacher_name"
-    ),
-    path("search/", SearchNameView.as_view(), name="search_name"),
     path("class_list/", ClassListView.as_view(), name="class_list"),
-    path('logout/', CustomLogoutView.as_view(next_page='myapp:login'), name='logout'),
     path("create_class/", CreateClassView.as_view(), name="create_class"),
     path("edit_class/<int:pk>/", UpdateClassView.as_view(), name="edit_class"),
-    path("school/", SchoolListView.as_view(), name="school_list"),
-    path("school/create/", CreateSchoolView.as_view(), name="create_school"),
-    path("school/edit/<int:pk>/", UpdateSchoolView.as_view(), name="edit_school"),
+    path("school_list/", SchoolListView.as_view(), name="school_list"),
+    path("create_school/", CreateSchoolView.as_view(), name="create_school"),
+    path("edit_school/<int:pk>/", UpdateSchoolView.as_view(), name="edit_school"),
+    path("profile/", EditUserView.as_view(), name="profile"),
+    path("edit_profile/", EditProfileView.as_view(), name="edit_profile"),
+    path("search/", SearchNameView.as_view(), name="search_name"),
+    path("logout/", LogoutUserView.as_view(), name="logout"),
     path(
         "password_reset/",
         auth_views.PasswordResetView.as_view(template_name="password_reset.html"),
