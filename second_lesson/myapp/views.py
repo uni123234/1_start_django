@@ -278,9 +278,7 @@ class EditProfileView(LoginRequiredMixin, UpdateView):
 
 class CustomLogoutView(LogoutView):
     http_method_names = ["get", "post"]
+    next_page = None
 
-    def get_next_page(self):
-        next_page = super().get_next_page()
-        if next_page is None:
-            next_page = reverse("myapp:login")
-        return next_page
+    def get_redirect_url(self):
+        return self.next_page or reverse("myapp:login")
