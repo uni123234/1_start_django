@@ -9,7 +9,11 @@
                     <form method="POST">
                         {% csrf_token %}
                         {{ form.as_p }}
-                        <button type="submit" class="btn btn-primary">Login</button>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" name="remember_me" id="remember_me">
+                            <label class="form-check-label" for="remember_me">Remember me</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-3">Login</button>
                     </form>
                     <div class="mt-3">
                         <a href="{% url 'myapp:password_reset' %}">Forgot your password?</a>

@@ -39,8 +39,6 @@ urlpatterns = [
     path("create_school/", CreateSchoolView.as_view(), name="create_school"),
     path("edit_school/<int:pk>/", UpdateSchoolView.as_view(), name="edit_school"),
     path("profile/", EditUserView.as_view(), name="profile"),
-    path("edit_profile/", EditProfileView.as_view(), name="edit_profile"),
-    path("search/", SearchNameView.as_view(), name="search_name"),
     path("logout/", LogoutUserView.as_view(), name="logout"),
     path(
         "password_reset/",
@@ -68,4 +66,5 @@ urlpatterns = [
         ),
         name="password_reset_complete",
     ),
+    path("teachers/search/", SearchNameView.as_view(), name="search_teacher_name"),
 ]

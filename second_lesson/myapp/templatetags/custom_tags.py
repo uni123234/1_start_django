@@ -22,8 +22,6 @@ def profile_menu(user, school_id=None, student_id=None, teacher_id=None):
     if user.is_teacher:
         menu = {
             "Profile": reverse_lazy("myapp:profile"),
-            "Edit User": reverse_lazy("myapp:edit_user"),
-            "Edit Profile": reverse_lazy("myapp:edit_profile"),
             "Edit Class": reverse_lazy("myapp:class_list"),
             "Edit School": (
                 reverse_lazy("myapp:edit_school", kwargs={'pk': school_id})
