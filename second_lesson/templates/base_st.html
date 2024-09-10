@@ -115,11 +115,9 @@
     </header>
 
     <div class="content-wrapper">
-        {% cache 600 content %}
         <div class="container mt-4">
             {% block content %}{% endblock %}
         </div>
-        {% endcache %}
     </div>
 
     <footer>
