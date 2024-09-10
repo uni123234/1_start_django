@@ -4,6 +4,7 @@ from .views import (
     LogoutUserView,
     RegisterView,
     LoginView,
+    SaveClassView,
     SchoolListView,
     StudentListView,
     TeacherListView,
@@ -67,4 +68,6 @@ urlpatterns = [
         name="password_reset_complete",
     ),
     path("teachers/search/", SearchNameView.as_view(), name="search_teacher_name"),
+    path('save-class/<int:class_id>/', SaveClassView.as_view(), name='save_class'),
 ]
+

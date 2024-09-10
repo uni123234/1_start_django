@@ -66,6 +66,7 @@ class Teacher(models.Model):
     last_name = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
     school = models.ForeignKey(School, on_delete=models.CASCADE)
+    saved_classes = models.ManyToManyField('Class', related_name='saved_by_teachers', blank=True)
 
     objects = TeacherManager()
 
