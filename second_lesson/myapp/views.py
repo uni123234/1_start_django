@@ -9,6 +9,7 @@ from django.db.models import Q
 from django.db import transaction
 from django.contrib.auth.views import LogoutView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.cache import cache
 from .models import Class, CustomUser, School, Student, Teacher
 from .forms import (
     ClassForm,
@@ -96,7 +97,6 @@ class LoginView(View):
             )
         return render(request, "login.html", {"form": form})
 
-
 class StudentListView(LoginRequiredMixin, ListView):
     model = Student
     template_name = "index.html"
@@ -109,7 +109,13 @@ class StudentListView(LoginRequiredMixin, ListView):
                 self.request, "You do not have permission to view this page."
             )
             raise PermissionDenied("You do not have permission to view this page.")
-        return Student.objects.all()
+
+        cached_students = cache.get('all_students')
+        if not cached_students:
+            cached_students = Student.objects.all()
+            cache.set('all_students', cached_students)
+        return cached_students
+
 
 
 class TeacherListView(LoginRequiredMixin, ListView):
@@ -119,7 +125,12 @@ class TeacherListView(LoginRequiredMixin, ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        return Teacher.objects.order_by("last_name")
+        cached_teachers = cache.get('all_teachers')
+        if not cached_teachers:
+            cached_teachers = Teacher.objects.order_by("last_name")
+            cache.set('all_teachers', cached_teachers)
+        return cached_teachers
+
 
 
 class CreateStudentView(LoginRequiredMixin, CreateView):
