@@ -34,6 +34,6 @@ jobs:
 
       - name: Run pylint with Django settings
         env:
-          DJANGO_SETTINGS_MODULE: drf_lib.settings
+          DJANGO_SETTINGS_MODULE: drf_lib.drf_lib.settings
         run: |
           pylint --load-plugins pylint_django drf_lib
