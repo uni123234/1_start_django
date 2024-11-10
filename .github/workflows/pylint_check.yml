@@ -22,10 +22,10 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pylint django pylint-django djangorestframework pylint-django-rest-framework
+          pip install pylint django pylint-django djangorestframework
 
       - name: Run pylint with Django settings
         env:
-          DJANGO_SETTINGS_MODULE: drf_lib.drf.lib.settings
+          DJANGO_SETTINGS_MODULE: drf_lib.drf_lib.settings
         run: |
           pylint --load-plugins pylint_django drf_lib
