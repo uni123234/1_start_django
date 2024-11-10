@@ -30,7 +30,11 @@ jobs:
 
       - name: Ensure __init__.py exists in drf_lib
         run: |
-          touch drf_lib/__init__.py
+          touch drf_lib/__init__.py 
+
+      - name: Set PYTHONPATH to include the project
+        run: |
+          echo "PYTHONPATH=$(pwd)" >> $GITHUB_ENV
 
       - name: Run pylint with Django settings
         env:
