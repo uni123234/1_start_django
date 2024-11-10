@@ -21,8 +21,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install pylint django pylint-django djangorestframework celery djoser django_filters
+            python -m pip install --upgrade pip
+            pip install pylint django pylint-django djangorestframework celery djoser django_filters==22.1
 
       - name: Run pylint with Django settings
         env:
